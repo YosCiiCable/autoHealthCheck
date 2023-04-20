@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	//"errors"
 	"fmt"
 	"log"
 	"os"
@@ -33,15 +33,16 @@ func main() {
 	//*/
 	//defer cancel()
 
+	// level1: Access the page
+	fmt.Println("Ctrl+C で強制停止できます(Windows)。全く動かない時など、お試しあれ。")
 	if err := chromedp.Run(ctx, chromedp.Navigate("https://forms.gle/2iPTW6X4XjHCu4ar7")); err != nil {
 		log.Fatal("err1: Failed login")
 	}
 
-	// level1: login
-	fmt.Println("Ctrl+C で強制停止できます(Windows)。全く動かない時など、お試しあれ。")
-	login(ctx, "sを含めた学籍番号: ", "@ga.ariake-nct.ac.jp")
+	// level2: login
+	credentialInputer(ctx, "sを含めた学籍番号: ", "@ga.ariake-nct.ac.jp")
 
-	// level2: 遷移チェック
+	// level3: 遷移チェック
 	/* fmt.Println("ロード中………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="LbtMaRePassword"]/font`, chromedp.AtLeast(0)),
@@ -52,19 +53,22 @@ func main() {
 	*/
 }
 
-func login(ctx context.Context, inputMessage string, additionalInfo string) {
+func credentialer (inputMessage string, additionalInfo string) string {
 	var credential string
+	fmt.Println(inputMessage)
 	fmt.Scan(&credential)
 	credential = credential + additionalInfo
-	fmt.Println("ログイン処理開始………")
+	return credential
+}
 
+func loginer(ctx context.Context, credential string){
+	fmt.Println("ログイン処理開始………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="identifierId"]`, chromedp.NodeVisible),
 		input.InsertText(credential),
 	); err != nil {
 		log.Fatal("err1: Failed login")
 	}
-
 	fmt.Println("ログイン完了")
 }
 
