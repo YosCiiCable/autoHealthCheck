@@ -30,8 +30,6 @@ func main() {
 	)
 	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, _ := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
-	//*/
-	//defer cancel()
 
 	// level1: Access the page
 	fmt.Println("Ctrl+C で強制停止できます(Windows)。全く動かない時など、お試しあれ。")
@@ -56,7 +54,7 @@ func main() {
 }
 
 func login(ctx context.Context) {
-	var mailAddress string
+	var mailAddress, checkPageTransition string
 	fmt.Printf("sを含めた学籍番号: ")
 	fmt.Scan(&mailAddress)
 	mailAddress = mailAddress + "@ga.ariake-nct.ac.jp"
@@ -65,21 +63,32 @@ func login(ctx context.Context) {
 	fmt.Println("ログイン処理開始………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="identifierId"]`, chromedp.NodeVisible),
-		input.InsertText(mailAddress), //*[@id="selectionc31"]
+		input.InsertText(mailAddress),
 		chromedp.Click(`#identifierNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
-		chromedp.WaitVisible(`//*[@id="selectionc1"]`),
 	); err != nil {
-		log.Fatal("err1: Failed login")
+		log.Fatal("err1@login: Failed login")
 	}
 
 	// [todo] 待ちきれない時の処理
+	time.Sleep(10 * time.Second)
+	fmt.Println("ええで")
+	if err := chromedp.Run(ctx,
+		chromedp.Text(`//*[@id="selectionc1"]`, &checkPageTransition, chromedp.ByQuery),
+	); err != nil {
+		log.Fatal("err2@login: Failed confirmation of email address input")
+	}
+	if checkPageTransition != "パスワードを表示する" {
+		fmt.Println("だめー")
+	}
+
 	// [todo] ログイン失敗の処理
-	time.Sleep(5 * time.Second)
+
+
 	if err := chromedp.Run(ctx,
 		input.InsertText(mailPasswd),
 		chromedp.Click(`#passwordNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
 	); err != nil {
-		log.Fatal("err1: Failed login")
+		log.Fatal("err3@login: Failed login")
 	}
 
 	fmt.Println("ログイン完了")
@@ -121,12 +130,12 @@ func debugPic(ctx context.Context) {
 	if err := chromedp.Run(ctx,
 		chromedp.FullScreenshot(&buf, 90),
 	); err != nil {
-		log.Fatal("err@debugPic-1: Failed to capture a screenshot")
+		log.Fatal("err1@debugPic: Failed to capture a screenshot")
 	}
 	// debug level2: スクショ出力
 	if err := os.WriteFile(
 		"fullScreenshot.png", buf, 0o644,
 	); err != nil {
-		log.Fatal("err@debugPic-2: Failed to output the screenshot")
+		log.Fatal("err2@debugPic: Failed to output the screenshot")
 	}
 }
