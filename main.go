@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// level2: login
-	credentialInputer(ctx, "sを含めた学籍番号: ", "@ga.ariake-nct.ac.jp")
+	login(ctx)
 
 	// level3: 遷移チェック
 	/* fmt.Println("ロード中………")
@@ -53,19 +53,22 @@ func main() {
 	*/
 }
 
-func credentialer (inputMessage string, additionalInfo string) string {
-	var credential string
-	fmt.Println(inputMessage)
-	fmt.Scan(&credential)
-	credential = credential + additionalInfo
-	return credential
-}
+func login(ctx context.Context) {
+	var mailAddress string
+	fmt.Printf("sを含めた学籍番号: ")
+	fmt.Scan(&mailAddress)
+	mailAddress = mailAddress + "@ga.ariake-nct.ac.jp"
+	mailPasswd := passwdInputer("統合認証のパスワード: ")
 
-func loginer(ctx context.Context, credential string){
 	fmt.Println("ログイン処理開始………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="identifierId"]`, chromedp.NodeVisible),
-		input.InsertText(credential),
+		input.InsertText(mailAddress),
+		chromedp.Click(`#identifierNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
+		chromedp.Sleep(1000000), // 1000000 nano sec == 1sec
+		chromedp.Click(`//*[@id="password"]`, chromedp.NodeVisible),
+		input.InsertText(mailPasswd),
+		chromedp.Click(`#passwordNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
 	); err != nil {
 		log.Fatal("err1: Failed login")
 	}
