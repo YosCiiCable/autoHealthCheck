@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	//"strconv"
-	//"time"
+	"time"
 
 	"github.com/chromedp/cdproto/input"
 	//"github.com/chromedp/cdproto/target"
@@ -35,9 +35,11 @@ func main() {
 
 	// level1: Access the page
 	fmt.Println("Ctrl+C で強制停止できます(Windows)。全く動かない時など、お試しあれ。")
+	fmt.Println("アクセス開始(時間がかかります)………")
 	if err := chromedp.Run(ctx, chromedp.Navigate("https://forms.gle/2iPTW6X4XjHCu4ar7")); err != nil {
 		log.Fatal("err1: Failed login")
 	}
+	fmt.Println("アクセス完了")
 
 	// level2: login
 	login(ctx)
@@ -58,20 +60,28 @@ func login(ctx context.Context) {
 	fmt.Printf("sを含めた学籍番号: ")
 	fmt.Scan(&mailAddress)
 	mailAddress = mailAddress + "@ga.ariake-nct.ac.jp"
-	mailPasswd := passwdInputer("統合認証のパスワード: ")
+	mailPasswd := passwdInputer("統合認証のパスワード")
 
 	fmt.Println("ログイン処理開始………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="identifierId"]`, chromedp.NodeVisible),
-		input.InsertText(mailAddress),
+		input.InsertText(mailAddress), //*[@id="selectionc31"]
 		chromedp.Click(`#identifierNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
-		chromedp.Sleep(1000000), // 1000000 nano sec == 1sec
-		chromedp.Click(`//*[@id="password"]`, chromedp.NodeVisible),
+		chromedp.WaitVisible(`//*[@id="selectionc1"]`),
+	); err != nil {
+		log.Fatal("err1: Failed login")
+	}
+
+	// [todo] 待ちきれない時の処理
+	// [todo] ログイン失敗の処理
+	time.Sleep(5 * time.Second)
+	if err := chromedp.Run(ctx,
 		input.InsertText(mailPasswd),
 		chromedp.Click(`#passwordNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
 	); err != nil {
 		log.Fatal("err1: Failed login")
 	}
+
 	fmt.Println("ログイン完了")
 }
 
