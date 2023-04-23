@@ -60,7 +60,7 @@ func login(ctx context.Context) {
 	mailAddress = mailAddress + "@ga.ariake-nct.ac.jp"
 	mailPasswd := passwdInputer("統合認証のパスワード")
 
-	fmt.Println("ログイン処理開始………")
+	fmt.Println("ログイン処理開始(時間がかかります)………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="identifierId"]`, chromedp.NodeVisible),
 		input.InsertText(mailAddress),
@@ -68,28 +68,40 @@ func login(ctx context.Context) {
 	); err != nil {
 		log.Fatal("err1@login: Failed login")
 	}
+	time.Sleep(5 * time.Second)
 
-	// [todo] 待ちきれない時の処理
-	time.Sleep(10 * time.Second)
-	fmt.Println("ええで")
+	// メールアドレスの入力が正しいか(遷移しているか)確認
 	if err := chromedp.Run(ctx,
-		chromedp.Text(`//*[@id="selectionc1"]`, &checkPageTransition, chromedp.ByQuery),
+		chromedp.Text(`#selectionc1`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
 	); err != nil {
-		log.Fatal("err2@login: Failed confirmation of email address input")
+		log.Fatal("err2@login: Failed in page transition confirmation process")
 	}
 	if checkPageTransition != "パスワードを表示する" {
-		fmt.Println("だめー")
+		log.Fatal("err3@login: Failed to load on email address input page")
 	}
 
-	// [todo] ログイン失敗の処理
-
-
+	// パスワード入力、ログイン実行
 	if err := chromedp.Run(ctx,
 		input.InsertText(mailPasswd),
 		chromedp.Click(`#passwordNext > div > button > div.VfPpkd-RLmnJb`, chromedp.NodeVisible),
 	); err != nil {
-		log.Fatal("err3@login: Failed login")
+		log.Fatal("err4@login: Failed to operate the login button")
 	}
+	time.Sleep(5 * time.Second)
+
+	// ログインしてページ遷移をしているか確認
+	if err := chromedp.Run(ctx,
+		chromedp.Text(`body > div.Uc2NEf > div:nth-child(2) > div.RH5hzf.RLS9Fe > div > div.pdLVYe.LgNcQe`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
+	); err != nil {
+		log.Fatal("err5@login: Failed in page transition confirmation process")
+	}
+	if checkPageTransition != "健康チェック報告" {
+		log.Fatal("err6@login: Failed to load on password input page")
+	}
+
+	// [todo]時間外かどうか調べる
+
+	// [todo]ログイン完了後の処理
 
 	fmt.Println("ログイン完了")
 }
