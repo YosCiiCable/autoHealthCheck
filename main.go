@@ -88,8 +88,20 @@ func login(ctx context.Context) {
 		log.Fatal("err4@login: Failed to operate the login button")
 	}
 	time.Sleep(5 * time.Second)
+	fmt.Println("ok")
 
-	// ログインしてページ遷移をしているか確認
+	// ログインしてページ遷移をしているか確認1
+	if err := chromedp.Run(ctx,
+		chromedp.Text(`//*[@id="yDmH0d"]/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
+	); err != nil {
+		log.Fatal("err5@login: Failed in page transition confirmation process")
+	}
+	if checkPageTransition == "パスワードが正しくありません。入力し直してください。[パスワードをお忘れの場合] をクリックすると、再設定できます。" {
+		log.Fatal("err6@login: Failed to load on password input page")
+	}
+	fmt.Println("ok")
+
+	// ログインしてページ遷移をしているか確認2
 	if err := chromedp.Run(ctx,
 		chromedp.Text(`body > div.Uc2NEf > div:nth-child(2) > div.RH5hzf.RLS9Fe > div > div.pdLVYe.LgNcQe`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
 	); err != nil {
@@ -98,10 +110,61 @@ func login(ctx context.Context) {
 	if checkPageTransition != "健康チェック報告" {
 		log.Fatal("err6@login: Failed to load on password input page")
 	}
+	fmt.Println("ok")
 
-	// [todo]時間外かどうか調べる
+	// 時間外かどうか調べる
+	if err := chromedp.Run(ctx,
+		chromedp.Text(`//*[@id="i1"]/span[1]`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
+	); err != nil {
+		log.Fatal("err7@login: Failed to select text to confirm page transition")
+	}
+	if checkPageTransition != "今朝の体温   (平熱：普段の健康な時の体温，過去1か月程度の平均体温を目安に)" {
+		log.Fatal("err8@login: Failed to load on 1st form")
+	}
+	fmt.Println("ok")
 
-	// [todo]ログイン完了後の処理
+	// 最初のフォームを入力
+	if err := chromedp.Run(ctx,
+		input.InsertText(mailPasswd),
+		chromedp.Click(`//*[@id="mG61Hd"]/div[2]/div/div[2]/div/div/div/div[2]/div/div[1]/div[1]/div[1]`, chromedp.NodeVisible),
+		chromedp.Click(`//*[@id="mG61Hd"]/div[2]/div/div[2]/div/div/div/div[2]/div/div[2]/div[3]/span`, chromedp.NodeVisible),
+		chromedp.Click(`//*[@id="mG61Hd"]/div[2]/div/div[3]/div[1]/div[1]/div/span`, chromedp.NodeVisible),
+	); err != nil {
+		log.Fatal("err9@login: Failed to operate the login button")
+	}
+	time.Sleep(3 * time.Second)
+	fmt.Println("ok")
+
+	// フォーム遷移確認
+	if err := chromedp.Run(ctx,
+		chromedp.Text(`//*[@id="i1"]/span[1]`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
+	); err != nil {
+		log.Fatal("err10@login: Failed to select text to confirm page transition")
+	}
+	if checkPageTransition != "体調はどうですか？" {
+		log.Fatal("err11@login: Failed to load on 2nd form")
+	}
+	fmt.Println("ok")
+
+	// 2つ目のフォームを入力
+	if err := chromedp.Run(ctx,
+		input.InsertText(mailPasswd),
+		chromedp.Click(`//*[@id="mG61Hd"]/div[2]/div/div[2]/div[2]/div/div/div[2]/div/div/span/div/div[1]/label`, chromedp.NodeVisible),
+		chromedp.Click(`//*[@id="mG61Hd"]/div[2]/div/div[3]/div[1]/div[1]/div[2]/span`, chromedp.NodeVisible),
+	); err != nil {
+		log.Fatal("err9@login: Failed to operate the login button")
+	}
+	time.Sleep(3 * time.Second)
+	fmt.Println("ok")
+
+	// 3つ目のフォームを入力
+	if err := chromedp.Run(ctx,
+		input.InsertText(mailPasswd),
+		chromedp.Click(`//*[@id="mG61Hd"]/div[2]/div/div[3]/div[2]/div[1]/div[2]/span`, chromedp.NodeVisible),
+	); err != nil {
+		log.Fatal("err9@login: Failed to operate the login button")
+	}
+	time.Sleep(3 * time.Second)
 
 	fmt.Println("ログイン完了")
 }
