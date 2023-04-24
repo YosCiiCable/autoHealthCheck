@@ -90,9 +90,12 @@ func login(ctx context.Context) {
 	time.Sleep(5 * time.Second)
 	fmt.Println("ok")
 
-	// ログインしてページ遷移をしているか確認1
+	if err := chromedp.Run(ctx, chromedp.Navigate("https://forms.gle/2iPTW6X4XjHCu4ar7")); err != nil {
+		log.Fatal("err5@login: 遷移できんで")
+	}
+	/* // ログインしてページ遷移をしているか確認1
 	if err := chromedp.Run(ctx,
-		chromedp.Text(`//*[@id="yDmH0d"]/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
+		chromedp.Text(`//*[@id="yDmH0d"]/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span`, &checkPageTransition, chromedp.ByQuery),
 	); err != nil {
 		log.Fatal("err5@login: Failed in page transition confirmation process")
 	}
@@ -100,10 +103,11 @@ func login(ctx context.Context) {
 		log.Fatal("err6@login: Failed to load on password input page")
 	}
 	fmt.Println("ok")
+	*/
 
 	// ログインしてページ遷移をしているか確認2
 	if err := chromedp.Run(ctx,
-		chromedp.Text(`body > div.Uc2NEf > div:nth-child(2) > div.RH5hzf.RLS9Fe > div > div.pdLVYe.LgNcQe`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
+		chromedp.Text(`head > title`, &checkPageTransition, chromedp.NodeVisible, chromedp.ByQuery),
 	); err != nil {
 		log.Fatal("err5@login: Failed in page transition confirmation process")
 	}
