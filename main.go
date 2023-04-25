@@ -32,7 +32,7 @@ func main() {
 	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, _ := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
-	// level1: Access the page
+	// level1: ページにアクセス
 	fmt.Println("Ctrl+C で強制停止できます(Windows)。全く動かない時など、お試しあれ。")
 	fmt.Println("アクセス開始(時間がかかります)………")
 	if err := chromedp.Run(ctx, chromedp.Navigate("https://forms.gle/2iPTW6X4XjHCu4ar7")); err != nil {
@@ -55,12 +55,14 @@ func main() {
 }
 
 func login(ctx context.Context) {
+	// クレデンシャルの入力
 	var mailAddress, checkPageTransition string
 	fmt.Printf("sを含めた学籍番号: ")
 	fmt.Scan(&mailAddress)
 	mailAddress = mailAddress + "@ga.ariake-nct.ac.jp"
 	mailPasswd := passwdInputer("統合認証のパスワード")
 
+	// ログイン処理
 	fmt.Println("ログイン処理開始(時間がかかります)………")
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="identifierId"]`, chromedp.NodeVisible),
@@ -69,7 +71,7 @@ func login(ctx context.Context) {
 	); err != nil {
 		log.Fatal("err1@login: Failed login")
 	}
-	time.Sleep(7 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	/* // メールアドレスの入力が正しいか(遷移しているか)確認1
 	if err := chromedp.Run(ctx,
@@ -87,13 +89,12 @@ func login(ctx context.Context) {
 		chromedp.WaitVisible(`//*[@id="headingText"]/span`),
 		chromedp.Location(&url2CheckTransition),
 	); err != nil {
-		log.Fatal("err3-2@login: Failed in page transition confirmation process")
+		log.Fatal("err2@login: Failed in page transition confirmation process")
 	}
-	if strings.Contains(url2CheckTransition, "dsh") {
-		log.Fatal("err3-3@login: Failed to load on email address input page")
+	if strings.Contains(url2CheckTransition, "https://accounts.google.com/v3/signin/identifier?dsh") {
+		log.Fatal("err3@login: Failed to load on email address input page")
 	}
 
-	fmt.Println("go")
 	// パスワード入力、ログイン実行
 	if err := chromedp.Run(ctx,
 		chromedp.Click(`//*[@id="password"]/div[1]/div/div[1]/input`, chromedp.NodeVisible),
@@ -102,15 +103,8 @@ func login(ctx context.Context) {
 	); err != nil {
 		log.Fatal("err4@login: Failed to operate the login button")
 	}
-	fmt.Println("gok")
 	time.Sleep(5 * time.Second)
-	fmt.Println("ok")
 
-	if err := chromedp.Run(ctx,
-		chromedp.Navigate("https://forms.gle/2iPTW6X4XjHCu4ar7"),
-	); err != nil {
-		log.Fatal("err5@login: 遷移できんで")
-	}
 	/* // ログインしてページ遷移をしているか確認1
 	if err := chromedp.Run(ctx,
 		chromedp.Text(`//*[@id="yDmH0d"]/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[2]/div[2]/span`, &checkPageTransition, chromedp.ByQuery),
@@ -143,6 +137,13 @@ func login(ctx context.Context) {
 	}
 	if strings.Contains(url2CheckTransition, "pwd") {
 		log.Fatal("err4-3@login: Failed to load on password input page")
+	}
+
+	// フォーム遷移
+	if err := chromedp.Run(ctx,
+		chromedp.Navigate("https://forms.gle/2iPTW6X4XjHCu4ar7"),
+	); err != nil {
+		log.Fatal("err5@login: 遷移できんで")
 	}
 
 	// 時間外かどうか調べる
