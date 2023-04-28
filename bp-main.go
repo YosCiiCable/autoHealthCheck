@@ -15,6 +15,7 @@ import (
 	"github.com/chromedp/chromedp"
 
 	"github.com/manifoldco/promptui"
+	"github.com/YosCiiCable/autoHealthCheck"
 )
 
 func main() {
